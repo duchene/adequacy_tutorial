@@ -87,7 +87,7 @@ Exercise}\label{programs-used-in-this-practical}
 
 \subsection{Step 1: run the empirical data}\label{step-1-run-the-empirical-data}
 
-In the data folder you will find a simulated sequence alignment with 2000 nucleotides in nexus format (al.nex) and a Yule-process chronogram in newick format (chrono.tre) with 50 taxa. The alignment was simulated along the chronogram under a Jukes-Cantor substitution model and with rate auto-correlation among lineages. You will also find an XML file (sim.xml) in the xml folder to run BEAST 2  for this data set under a strict clock and a Jukes-Cantor model of substitution and a root calibration.
+In the data folder you will find a simulated sequence alignment with 2000 nucleotides in nexus format (al.1.nex) and a Yule-process chronogram in newick format (chron.tre) with 50 taxa. The alignment was simulated along the chronogram under a Jukes-Cantor substitution model and with rate auto-correlation among lineages. You will also find an XML file (sim.1.xml) in the xml folder to run BEAST 2  for this data set under a strict clock and a Jukes-Cantor model of substitution and a root calibration.
 
 In this first step, we will run the XML file using BEAST 2. The output of this run can also be found in the folder preekooked runs.
 
@@ -121,7 +121,7 @@ In the second step we need to read the posterior trees and parameter estimates o
   The sequence length (number of sites in your alignment).
 \end{enumerate}
 
-Feel free to investigate the make.pps.als code if you are interested in how we can read and simulate data in R. The following is the line in adeq.R in question:
+If you are interested in how you can read and simulate data in R, you can investigate the make.pps.als code. The following is the line in adeq.R in question:
 
  \begin{lstlisting}[language=R]
     sims <- make.pps.als(trees.file, log.file, Nsim, seqlen)
@@ -166,7 +166,7 @@ Next, we set the directory to precooked runs, and run the function adeq(). The a
 
 \begin{lstlisting}[language=R]
     setwd("../precooked_runs")
-    clock_adequacy_example <- adeq(trees.file = "sim.trees", log.file ="sim.log", empdat.file = "../data/al.nex", Nsim = 100)
+    clock_adequacy_example <- adeq(trees.file = "sim1.trees", log.file ="sim1.log", empdat.file = "../data/al.1.nex", Nsim = 100)
     names(clock_adequacy_example)
 \end{lstlisting}
 
@@ -185,14 +185,14 @@ The following section uses the results from results.Rdata to produce a variety o
 
 It is strongly recommended to use qualitative checks of models using graphical analyses. This section uses the results in precooked runs/results.Rdata to graph different components for assessing clock model adequacy using posterior predictive simulations.
 
-We will first visualise the results for assessing substitution model adequacy. The following is to make a histogram of the distribution of the multinomial likelihood for the PPS data, and will show the position of the value for empirical data on this distribution.
+We will first visualise the results for assessing substitution model adequacy. The following code makes a histogram of the distribution of the multinomial likelihood for the PPS data, and will show the position of the value for empirical data on this distribution.
 
 \begin{lstlisting}[language=R]
     hist(assessment_provided[[8]], xlim = c(min(assessment_provided[[8]])-sd(assessment_provided[[8]]), max(assessment_provided[[8]])+sd(assessment_provided[[8]])), main = "", xlab = "Multinomial likelihood")
     abline(v = assessment_provided[[7]], col = 2, lwd = 3)
 \end{lstlisting}
 
-This code should generate a plot that is identical or very similar to those in Figure 2. When assessing model adequacy, we consider the model to be an adequate representation of the evolutionary process if the test statistic for the empirical data is a typical value arising from the model. The multinomial likelihood for the empirical data falls inside the distribution of values for simulated data (Figure 2), so our model is a good description of the process that generated the data. This is unsurprising, since our empirical data were generated under the model!
+Your plot will be identical or very similar to Figure 2. When assessing model adequacy, we consider the model to be an adequate representation of the evolutionary process if the test statistic for the empirical data is a typical value arising from the model. The multinomial likelihood for the empirical data falls inside the distribution of values for simulated data (Figure 2), so our model is a good description of the process that generated the data. This is unsurprising, since our empirical data were actually generated under the model!
 
 This result can also be observed in the \emph{P}-value for the multinomial likelihood in R:
 
@@ -217,33 +217,35 @@ The following script shows a simple example to explore the branch-wise posterior
    edgelabels(assessment_provided$branch_wise_pppvalues, bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
-The values along each branch indicate the number of simulations in which the branch-length was greater than the length estimated using the empirical data. The expected value under the model is 0.5, such that if this value is 0 branch-lengths are being underestimated with respect to the model. Similarly, branch-lengths are being overestimated with respect to the model if the value is 1.
+The values along each branch indicate the number of simulations in which the branch-length was greater than the length estimated using the empirical data. The expected value under the model is 0.5. If this value is 0 branch-lengths are being underestimated with respect to the model. Similarly, if the value is 1 branch-lengths are being overestimated with respect to the model.
 
-Also investigate the \emph{A} index:
+You can also investigate the \emph{A} index:
 
 \begin{lstlisting}[language=R]
    assessment_provided[4]
 \end{lstlisting}
 
-This index provides an additional piece of information: it is the proportion of branches in the tree for which the branch-wise posterior predictive \emph{P}-values are inside the central 95 percent of the distribution. The rates and times models can be considered adequate when the \emph{A} index is high.
+This index is the proportion of branches in the tree for which the branch-wise posterior predictive \emph{P}-values are inside the central 95 percent of the distribution. The rates and times models can be considered adequate when the \emph{A} index is high. 
+
+You might find it surprising that the \emph{A} index in these data is not so close to 1. The reason for this might be evident when you open the data alignment in a text editor. These data have a very large amount of variation, and have possibly undergone substantial substitutional saturation. For comparison, you might want to repeat all of the analyses, or explore the provided results for the second data set provided, al.2.nex. This data set evolved through the same tree but with lower rates of molecular evolution.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.800000\textwidth]{figures/Figure_3_branchwise_p.jpg}
+    \includegraphics[width=0.800000\textwidth]{figures/Figure_3_branchwise_p.pdf}
     \caption{Estimated chronogram with branches coloured by their clock adequacy \emph{P}-value.}
     \label{fig:example3}
 \end{figure}
 
-The following script shows a simple example to explore the branch wise length deviation. This metric is a proxy for the difference between the branch-length estimate using empirical data and the mean branch-length estimate from simulations. The units are the length of the empirical branch-length estimate. The rates and times models can be considered adequate if this value is close to zero. We apply the same colouring system as the plot above, but note that in the case of branch length deviation larger numbers indicate greater deviation from the empirical branch length, and therefore lower accuracy (Figure 4).
+The following script shows a simple example to explore the branch wise length deviation. This metric is a proxy for the difference between the branch-length estimate using empirical data and the mean branch-length estimate from simulations. The units to measure this difference are the length of each empirical branch-length estimate. The rates and times models can be considered adequate if this value is close to zero. We apply the same colouring system as the plot above, but note that in the case of branch length deviation larger numbers indicate greater deviation from the empirical branch length, and therefore lower accuracy (Figure 4).
 
 \begin{lstlisting}[language=R]
-    plot(tr, edge.col = rainbow(length(assessment_provided$branch_length_deviation), start = 2/6, end = 4/6)[rank(assessment_provided$branch_length_deviation)], edge.width = 6, cex = 1.5)
+    plot(tr, edge.col = rev(rainbow(length(assessment_provided$branch_length_deviation), start = 2/6, end = 4/6)[rank(assessment_provided$branch_length_deviation)]), edge.width = 6, cex = 1.5)
     edgelabels(round(assessment_provided$branch_length_deviation, 2), bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.800000\textwidth]{figures/Figure_4_branchwise_dev.jpg}
+    \includegraphics[width=0.800000\textwidth]{figures/Figure_4_branchwise_dev.pdf}
     \caption{Estimated chronogram with branches coloured by their deviation between the empirical and simulated lengths.}
     \label{fig:example4}
 \end{figure}
