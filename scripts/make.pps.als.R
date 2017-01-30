@@ -32,10 +32,12 @@ make.pps.als <- function(trees.file, log.file, N = 100, l = 1000){
 		     print(qmat)
 
 		     if("gammaShape" %in% colnames(logdat)){
+		     	   substmod <- "GTR+G"
 		     	   rates = phangorn:::discrete.gamma(logdat$gammaShape[i], k = 4)
         		   sim_dat_all<- lapply(rates, function(r) simSeq(sim[[i]][[1]], l = round(l/4, 0), Q = qmat, bf = basef, rate = r))
         		   sim[[i]][[3]] <- c(sim_dat_all[[1]], sim_dat_all[[2]], sim_dat_all[[3]], sim_dat_all[[4]])
-		     } else {		    
+		     } else {
+		       	   substmod <- "GTR"
 	      	       	   sim[[i]][[3]] <- simSeq(sim[[i]][[1]], Q = qmat, bf = basef, l = l)
 		     }		     
 		     
@@ -46,21 +48,23 @@ make.pps.als <- function(trees.file, log.file, N = 100, l = 1000){
 		     qmat <- c(1, 2*logdat$kappa[i], 1, 1, 2*logdat$kappa[i], 1)
 
 		     if("gammaShape" %in% colnames(logdat)){
+		     	   substmod <- "HKY+G"
 		     	   rates = phangorn:::discrete.gamma(logdat$gammaShape[i], k = 4)
        			   sim_dat_all<- lapply(rates, function(r) simSeq(sim[[i]][[1]], l = round(l/4, 0), Q = qmat, bf = basef, rate = r))
                            sim[[i]][[3]] <- c(sim_dat_all[[1]], sim_dat_all[[2]], sim_dat_all[[3]], sim_dat_all[[4]])
 		     } else {
+		       	   substmod <- "HKY"
                            sim[[i]][[3]] <- simSeq(sim[[i]][[1]], Q = qmat, bf = basef, l = l)
 	       	     }
 		     
 	      } else { 
 	      	     # JUKES-CANTOR (JC)
 		     #print("The substitution model is assumed to be JC")
+		     substmod <- "JC"
 	      	     sim[[i]][[3]] <- simSeq(sim[[i]][[1]], l = l)
 	      }
 
 	}
-	
-	return(sim)
-
+	sims <- list(sim, substmod)
+	return(sims)
 }
