@@ -250,7 +250,5 @@ Note that in this simple method to graph the results, the branches in the two pl
 
 # Relevant References
 
-- Goldman, N. (1993). Statistical tests of models of DNA substitution. Journal of molecular evolution, 36(2), 182-198.
-- Bollback, J. P. (2002). Bayesian model adequacy and choice in phylogenetics. Molecular Biology and Evolution, 19(7), 1171-1180.
-- Duchene, D. A., Duchene, S., Holmes, E. C., & Ho, S. Y. (2015). Evaluating the adequacy of molecular clock models using posterior predictive simulations. Molecular biology and evolution, 32(11), 2986-2995.
+{% bibliography --file adequacy_tutorial/master-refs %}
 
