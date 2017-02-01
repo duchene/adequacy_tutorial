@@ -35,7 +35,7 @@ A large number of test statistics have been proposed to assess the components of
 
 <figure>
 	<a id="fig:example1"></a>
-	<img style="width:80.0%;" src="figures/Figure_1.pdf" alt="">
+	<img style="width:80.0%;" src="figures/Figure_1.svg" alt="">
 	<figcaption>Figure 1: Two of the existing approaches to using posterior predictive simulations to assess model adequacy in Bayesian phylogenetics. (a) One group of methods use characteristics of the data for model assessment, like the multinomial likelihood or the GC content. (b) One method exists that can assess clock models using estimates from clock-free methods. The number of substitutions per site expected along each branch under the clock hierarchical model are then compared with those inferred in a clock-free analysis.</figcaption>
 </figure>
 <br>
@@ -181,7 +181,7 @@ This result can also be observed in the *P*-value for the multinomial likelihood
 
 <figure>
 	<a id="fig:example2"></a>
-	<img style="width:70.0%;" src="figures/Figure_2_multinomial_dist.pdf" alt="">
+	<img style="width:70.0%;" src="figures/Figure_2_multinomial_dist.svg" alt="">
 	<figcaption>Figure 2: Distribution of PPS multinomial likelihood values with the value of the test statistic for the empirical data shown as a vertical line in red.</figcaption>
 </figure>
 <br>
@@ -217,7 +217,7 @@ You might find it surprising that the {% eqinline A %} index in these data is no
 
 <figure>
 	<a id="fig:example3"></a>
-	<img style="width:90.0%;" src="figures/Figure_3_branchwise_p.pdf" alt="">
+	<img style="width:90.0%;" src="figures/Figure_3_branchwise_p.svg" alt="">
 	<figcaption>Figure 3: Estimated chronogram with branches coloured by their clock adequacy P-value.</figcaption>
 </figure>
 <br>
@@ -236,7 +236,7 @@ The following script shows a simple example to explore the branch wise length de
 
 <figure>
 	<a id="fig:example4"></a>
-	<img style="width:90.0%;" src="figures/Figure_4_branchwise_dev.pdf" alt="">
+	<img style="width:90.0%;" src="figures/Figure_4_branchwise_dev.svg" alt="">
 	<figcaption>Figure 4: Estimated chronogram with branches coloured by their deviation between the empirical and simulated lengths.</figcaption>
 </figure>
 <br>
