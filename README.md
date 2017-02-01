@@ -3,7 +3,7 @@ author: "David Duchêne"
 beastversion: 2.4.2
 level: Professional
 subtitle: Assessing clock and substitution models
-title: Model adequacy using BEAST v2.4.2
+title: Model adequacy using BEAST2
 layout: tutorial
 tutorial: adequacy_tutorial
 permalink: /:path/:basename:output_ext
