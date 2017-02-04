@@ -138,8 +138,8 @@ taxa="@sim2"/>
 <taxon id="s49" spec="Taxon"/>
 </taxonset>
 <Normal id="Normal.01" name="distr">
-<parameter estimate="true" id="RealParameter.a1" name="mean">49.991</parameter>
-<parameter estimate="true" id="RealParameter.b1" name="sigma">0.005</parameter>
+<parameter estimate="true" id="RealParameter.a1" name="mean">50</parameter>
+<parameter estimate="true" id="RealParameter.b1" name="sigma">5</parameter>
 </Normal>
 </distribution>
 </distribution>

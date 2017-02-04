@@ -81,11 +81,10 @@ molecular dating (Figure \ref{fig:example1}).
   missing data or indels should not be included when estimating the
   multinomial likelihood.
 \item
-  The $ A $ index assesses the power of the molecular dating
+  The $ A $ index assesses the power of the molecular-clock
   model to estimate the number of substitutions across branches,
   assuming a tree topology and an adequate substitution model. We will
-  go through this statistic in more detail during the practical
-  exercises.
+  go through this statistic in more detail during this exercise.
 \end{itemize}
 
 \section{Programs used in this
@@ -98,145 +97,75 @@ Exercise}\label{programs-used-in-this-exercise}
 \item
   R programming environment.
 \item
-  R packages \emph{ape} and \emph{phangorn}.
-\end{itemize}
+  R packages \emph{ape} and \emph{phangorn}. Before starting the exercise, install these packages by typing the following in your R console:
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.800000\textwidth]{figures/Figure_1.pdf}
-    \caption{Two of the existing approaches to using posterior predictive simulations to assess model adequacy in Bayesian phylogenetics. (a) One group of methods use characteristics of the data for model assessment, like the multinomial likelihood or the GC content. (b) One method exists that can assess clock models using estimates from clock-free methods. The number of substitutions per site expected along each branch under the clock hierarchical model are then compared with those inferred in a clock-free analysis.}
-    \label{fig:example1}
-\end{figure}
+      \begin{lstlisting}[language=R]
+      install.packages("phangorn", dependencies = T)
+      \end{lstlisting}
+
+\end{itemize}
 
 \clearpage
 
-\section{Steps for assessing model
-adequacy}\label{steps-for-assessing-model-adequacy}
-
-\subsection{Step 1: Run the empirical
-data}\label{step-1-run-the-empirical-data}
+\section{Run the empirical
+data}\label{run-the-empirical-data}
 
 In the \lstinline!data! folder you will find a simulated sequence
 alignment with 2000 nucleotides in nexus format (\lstinline!al.1.nex!)
 and a Yule-process chronogram in newick format (\lstinline!chron.tre!)
 with 50 taxa. The alignment was simulated along the chronogram under a
-Jukes-Cantor substitution model and with rate auto-correlation among
-lineages. You will also find an XML file (\lstinline!sim.1.xml!) in the
-\lstinline!xml! folder to run BEAST 2 for this data set under a strict
-clock and a Jukes-Cantor model of substitution and a root calibration.
+Jukes-Cantor substitution model and an \textbf{uncorrelated log-normal clock model}. You will also find an XML file (\lstinline!sim.1.xml!) in the
+\lstinline!xml! folder to run BEAST 2 for this data set. The settings in this XML file include a Jukes-Cantor substitution model, a \textbf{strict clock}, a birth-death tree prior, and a normally distributed root calibration with standard deviation of 5 and an offset of 50.
 
-In this first step, we will run the XML file using BEAST 2. The output
+Importantly, this XML file has been modified directly such that the starting tree has been provided and it remains fixed throughout the run. Continue in this section if you wish to learn how to modify the XML, or proceed to the next section to assess model adequacy. 
+
+Load the data \lstinline!al.1.nex! to BEAUti, setting the model as described above, and saving the XML file. Then open the XML file in your preferred text editor, and add a \lstinline!tree! statement as follows above line with the \lstinline!<run ...! statement.
+
+\begin{lstlisting}[language=XML]
+    <tree id="Tree.t:al" spec='beast.util.TreeParser' newick="((A, B), (C, D), E);" taxa="@al"/>
+\end{lstlisting}
+
+Make sure that the newick tree is correct (you will find this in \lstinline!chron.tre! in the \lstinline!data! folder). Also make sure that the names of the tree and the taxa are correct. You will find the name of your tree after \lstinline!"Tree.t:! elsewhere in the XML. The name of the taxa is an \lstinline!@! followed by your data \lstinline!id! as shown immediately above the alignment.
+
+Now remove the \lstinline!tree! statement, which is inside the \lstinline!state! and looks like the following.
+
+\begin{lstlisting}[language=XML]
+    <tree id="Tree.t:treename" name="stateNode">
+            <taxonset id="TaxonSet.alignmentname" spec="TaxonSet">
+                <alignment idref="alignmentname"/>
+            </taxonset>
+     </tree>
+\end{lstlisting}
+
+In the place of that \lstinline!tree! statement, type an \lstinline!input! statement, which will lead  to a new \lstinline!statenode! as follows.
+
+\begin{lstlisting}[language=XML]
+    <input name='stateNode' idref='Tree.t:treename'/>
+\end{lstlisting}
+
+Once again, make sure that the tree name is correct.
+
+Now remove the whole random tree initialiser, which begins and ends with the following lines.
+
+\begin{lstlisting}[language=XML]
+    <init id="RandomTree.t:treename" ...
+    ...
+    </init>
+\end{lstlisting}
+
+Lastly, remove the lines (or set the weights to 0) of the operators on the tree topology. These include the lines that have any of \lstinline!SubtreeSlide!, \lstinline!Narrow!, \lstinline!Wide!, and \lstinline!WilsonBalding!. You might find these words together with the tree model selected (in this case \lstinline!BirthDeath!).
+
+Now run the XML file using BEAST 2. The output
 of this run can also be found in the folder \lstinline!precooked_runs!.
 
-\subsection{Step 2: Reading the runs and simulating
-data}\label{step-2-reading-the-runs-and-simulating-data}
+\section{One step model assessment}\label{one-step-model-assessment-exercise}
 
-We will run the remainder of the model assessment in section 4 of the
-practical. We will first study the code in R (or the comments) in
-detail, to cement the steps required for assessing model adequacy.
-Specifically, we will explore the file \lstinline!adeq.R!.
-
-Open the \lstinline!adeq.R! file in a text editor of your preference and
-you should see the following:
-
-\begin{lstlisting}[language=R]
-  adeq <- function(trees.file, log.file, empdat.file, Nsim = 100){
-     empdat <- as.phyDat(as.DNAbin(read.nexus.data(empdat.file)))
-     seqlen <- ncol(as.matrix(as.DNAbin(empdat)))
-     tree.topo <- read.nexus(trees.file)[[1]]
-     sims <- make.pps.als(trees.file, log.file, Nsim, seqlen)
-     sims <- make.pps.tr(sims, empdat, tree.topo)
-     bls <- compile.results(sims)
-     return(bls)
- }
-\end{lstlisting}
-
-In the second step we need to read the posterior trees and parameter
-estimates of the BEAST 2 analysis. The R package \emph{phangorn} allows
-us to take these data and make the posterior predictive simulations. You
-will find the code to read the posterior and simulate data in
-\lstinline!make.pps.als!, which identifies the model being assessed and
-simulates data accordingly. For revision, the input required in this
-step includes:
-
-\begin{itemize}
-
-\item
-  The paths of the posterior files for your analysis.
-\item
-  The number of simulations you want to perform.
-\item
-  The sequence length (number of sites in your alignment).
-\end{itemize}
-
-If you are interested in how you can read and simulate data in R, you
-can investigate the \lstinline!make.pps.als! code. The following is the
-line in \lstinline!adeq.R! in question:
-
-\begin{lstlisting}[language=R]
-    sims <- make.pps.als(trees.file, log.file, Nsim, seqlen)
-\end{lstlisting}
-
-If the input file has a greater number of samples than the number of
-simulations requested, this will randomly select samples from the
-posterior. You might want to revise how an alignment can be simulated
-using data from the posterior.
-
-\subsubsection{Step 3: Calculate test
-statistics}\label{step-3-calculate-test-statistics}
-
-Once we have simulated data sets, we can calculate the test statistics.
-The function \lstinline!make.pps.trs! takes the assumed tree,
-substitution model, and the empirical and simulated data sets. The
-function estimates phylogenetic branch lengths for the empirical data
-set and each of the simulated data sets. In this step we also estimate
-the multinomial likelihood test statistic for the empirical data and
-each of the simulated data sets.
-
-\begin{lstlisting}[language=R]
-    sims <- make.pps.tr(sims, empdat, tree.topo)
-\end{lstlisting}
-
-The output of this function is what we need for model assessment: the
-test statistics for the empirical data, and the distribution of test
-statistics for the simulated data sets.
-
-\subsubsection{\texorpdfstring{Step 4: Calculate
-\emph{P}-values}{Step 4: Calculate P-values}}\label{step-4-calculate-p-values}
-
-We can now compare the test statistic for the empirical data and each of
-the simulated data sets. The most common way to do this is to calculate
-the tail area probability, which is the number of simulations with a
-test statistic greater than the value for empirical data.
-
-\begin{lstlisting}[language=R]
-    bls <- compile.results(sims)
-\end{lstlisting}
-
-This function will provide the test statistics for simulations, as well
-as \emph{P}-values for each of the test statistics. Following practice
-from frequentist statistics, we can consider the model to be inadequate
-if the \emph{P}-value for a given test statistic is below 0.05.
-Importantly, the assessment of the clock model allows us to identify for
-which branches the molecular dating model can estimate the number of
-substitutions. We will explore the interpretation of these data after
-assessing model adequacy in the following section. \clearpage
-
-\section{Model assessment practice}\label{model-assessment-practice}
-
-\subsubsection{One step assessment}\label{one-step-assessment}
-
-In this section we will run our model assessment. The results for this
-example can also be found in the precooked runs folder. You will also
-find the results for the BEAST 2 run of sim.xml, which are the output of
-the first step for model assessment. We will now run and save the
-assessment of clock model adequacy, assuming that you are using the
-output of BEAST 2 or have completed your own run.
+In this section we will run substitution and clock model assessment, using the output from the BEAST 2 analysis that we ran in the previous section. We will perform a one step model assessment in this section, and in following section we will explore in detail each of the steps undergone in this assessment. The results for this
+example can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
+find the results for the BEAST 2 run of \lstinline!sim.1.xml!.
 
 Begin by opening R. The following will set the working directory to the
 scripts folder, and then source all the functions in the folder.
-Remember that we assume you have installed the package \emph{phangorn}
-and its dependencies.
 
 \begin{lstlisting}[language=R]
     setwd("[INSERT THE PATH TO SCRIPTS FOLDER]")
@@ -256,11 +185,11 @@ BEAST 2 analyses in another folder.
     names(clock_adequacy_example)
 \end{lstlisting}
 
-The contents of clock adequacy example should appear after the final
+The contents of \lstinline!clock_adequacy_example! should appear after the final
 line of code, and are each of the components that can be used to assess
 clock and substitution model adequacy.
 
-The clock adequacy example object should have the same contents as
+The \lstinline!clock_adequacy_example! object should have the same contents as
 object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
 
 \begin{lstlisting}[language=R]
@@ -268,10 +197,113 @@ object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
     names(assessment_provided)
 \end{lstlisting}
 
-The following section uses the results from results.Rdata to produce a
-variety of useful graphics.
+The following section describes the steps for assessing model adequacy in detail. \clearpage
 
-\subsubsection{Interpreting substitution model
+\section{Steps for assessing model
+adequacy}\label{steps-for-assessing-model-adequacy}
+
+\subsection{Reading the runs and simulating
+data}\label{reading-the-runs-and-simulating-data}
+
+We will study the code in R and Figure
+\ref{fig:example1} in
+detail. This section is mainly for reading and discussion, and is aimed for you to cement the steps required for assessing model adequacy.
+
+Open the \lstinline!adeq.R! file in a text editor of your preference and
+you should see the following:
+
+\begin{lstlisting}[language=R]
+  adeq <- function(trees.file, log.file, empdat.file, Nsim = 100){
+     empdat <- as.phyDat(as.DNAbin(read.nexus.data(empdat.file)))
+     seqlen <- ncol(as.matrix(as.DNAbin(empdat)))
+     tree.topo <- read.nexus(trees.file)[[1]]
+     sims <- make.pps.als(trees.file, log.file, Nsim, seqlen)
+     sims <- make.pps.tr(sims, empdat, tree.topo)
+     bls <- compile.results(sims)
+     return(bls)
+ }
+\end{lstlisting}
+
+The analysis of empirical data appears in blue in Figure 
+\ref{fig:example2}. We then need to read the posterior trees and parameter
+estimates of the BEAST 2 analysis. The R package \emph{phangorn} allows
+us to take these data and run the posterior predictive simulations, which is shown in green in Figure \ref{fig:example1}. You
+will find the code to read data from the posterior and for simulating genetic alignments in
+\lstinline!make.pps.als!. This script identifies the model being assessed and
+simulates data accordingly. The input required in this step includes:
+
+\begin{itemize}
+
+\item
+  The paths of the posterior files for your analysis.
+\item
+  The number of simulations you want to perform.
+\item
+  The sequence length (number of sites in your alignment).
+\end{itemize}
+
+If you are interested in how we read and simulate data in R, you
+can investigate the \lstinline!make.pps.als! code. The following is the
+line in \lstinline!adeq.R! in question:
+
+\begin{lstlisting}[language=R]
+    sims <- make.pps.als(trees.file, log.file, Nsim, seqlen)
+\end{lstlisting}
+
+If the input file has a greater number of samples than the number of
+simulations requested, this will randomly select samples from the
+posterior. This is a good moment to discuss or read about how an alignment can be simulated using data from the posterior.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.800000\textwidth]{figures/Figure_1.pdf}
+    \caption{Two of the existing approaches to using posterior predictive simulations to assess model adequacy in Bayesian phylogenetics. (a) One group of methods use characteristics of the data for model assessment, like the multinomial likelihood or the GC content. (b) Another method can assess clock models using estimates from clock-free methods. Under this approach, the number of substitutions per site expected along each branch under the clock hierarchical model are compared with those inferred in a clock-free analysis of the empirical data.}
+    \label{fig:example1}
+\end{figure}
+
+\clearpage
+
+\subsubsection{Calculate test
+statistics}\label{calculate-test-statistics}
+
+Once we have simulated data sets, we can calculate the test statistics.
+The function \lstinline!make.pps.trs! takes the assumed tree,
+substitution model, and the empirical and simulated data sets. The
+function estimates phylogenetic branch lengths for the empirical data
+set and each of the simulated data sets. In this step we also estimate
+the multinomial likelihood test statistic for the empirical data and
+each of the simulated data sets.
+
+\begin{lstlisting}[language=R]
+    sims <- make.pps.tr(sims, empdat, tree.topo)
+\end{lstlisting}
+
+The output of this function is what we need for model assessment: the
+test statistics for the empirical data, and the distribution of test
+statistics for the simulated data sets.
+
+\subsubsection{\texorpdfstring{Calculate
+\emph{P}-values}{Calculate P-values}}\label{calculate-p-values}
+
+We can now compare the test statistic for the empirical data and each of
+the simulated data sets, which is the step shown in red in Figure
+\ref{fig:example1}. The most common way to do this is to calculate
+the tail area probability, which is the number of simulations with a
+test statistic greater than the value for the empirical data.
+
+\begin{lstlisting}[language=R]
+    bls <- compile.results(sims)
+\end{lstlisting}
+
+This function will provide the test statistics for simulations, as well
+as \emph{P}-values for each of the test statistics. Following practice
+from frequentist statistics, we can consider the model to be inadequate
+if the \emph{P}-value for a given test statistic is below 0.05.
+Importantly, the assessment of the clock model allows us to identify the 
+branches for which the molecular clock model can estimate the number of
+substitutions. We will explore the interpretation of these data in the following section.
+
+\section{Interpreting substitution model
 assessment}\label{interpreting-substitution-model-assessment}
 
 It is strongly recommended to use qualitative checks of models using
@@ -300,9 +332,9 @@ to be an adequate representation of the evolutionary process if the test
 statistic for the empirical data is a typical value arising from the
 model. The multinomial likelihood for the empirical data falls inside
 the distribution of values for simulated data (Figure
-\ref{fig:example2}), so our model is a good description of the process
+\ref{fig:example2}), so our substitution model is a good description of the process
 that generated the data. This is unsurprising, since our empirical data
-were actually generated under the model!
+were actually generated under the same substitution model used for analysis!
 
 This result can also be observed in the \emph{P}-value for the
 multinomial likelihood in R:
@@ -337,7 +369,7 @@ branches that have the lowest accuracy in green (Figure
    edgelabels(assessment_provided$branch_wise_pppvalues, bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
-The values along each branch indicate the number of simulations in which
+The values along each branch indicate the proportion of simulations in which
 the branch-length was greater than the length estimated using the
 empirical data. The expected value under the model is 0.5. If this value
 is 0 branch-lengths are being underestimated with respect to the model.
@@ -371,12 +403,11 @@ tree but with lower rates of molecular evolution.
     \label{fig:example3}
 \end{figure}
 
-The following script shows a simple example to explore the branch wise
+The following script shows a simple example to explore the branch-wise
 length deviation. This metric is a proxy for the difference between the
 branch-length estimate using empirical data and the mean branch-length
-estimate from simulations. The units to measure this difference are the
-length of each empirical branch-length estimate. The rates and times
-models can be considered adequate if this value is close to zero. We
+estimate using posterior predictive simulations. To make the values comparable across branches, the difference between the empirical branch-length and mean PPS branch-length has been divided by the empirical branch length.
+If this value is close to zero, the priors for times and molecular evolutionary rates can be considered adequate. We
 apply the same colouring system as the plot above, but note that in the
 case of branch length deviation larger numbers indicate greater
 deviation from the empirical branch length, and therefore lower accuracy
