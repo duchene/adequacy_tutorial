@@ -1,0 +1,19 @@
+# Go to the folder with the R functions used to perform model assessment.
+
+setwd("scripts")
+
+# Source all the functions in the folder.
+
+for(i in dir()) source(i)
+
+# Go to the folder with the results of the BEAST 2 run.
+
+setwd("../precooked_runs")
+
+# Run assessment of model adequacy.
+
+clock_adequacy_example <- adeq(trees.file = "sim1.trees", log.file ="sim1.log", empdat.file = "../data/al.1.nex", Nsim = 100)
+
+# Save results from assessment of model adequacy.
+
+save(clock_adequacy_example, file = "../new.results.Rdata")

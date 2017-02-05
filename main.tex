@@ -164,19 +164,24 @@ In this section we will run substitution and clock model assessment, using the o
 example can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
 find the results for the BEAST 2 run of \lstinline!sim.1.xml!.
 
-Begin by opening R. The following will set the working directory to the
-scripts folder, and then source all the functions in the folder.
+Begin by opening R. A quick way to run model assessment using the data in this tutorial is to source the file \lstinline!run.assessment.Rscript!, found in the main tutorial folder. You will need to make sure that the R working directory is the main tutorial folder. If you want to go through your own assessment of model adequacy, ignore sourcing this file and instead continue with the remainder of this section.
+
+\begin{lstlisting}[language=R]
+    source("run.assessment.Rscript")
+\end{lstlisting}
+
+Follow the next steps to perform your own assessment of model adequacy. By typing the following, you will set the working directory to the scripts folder, and then source all the functions inside it.
 
 \begin{lstlisting}[language=R]
     setwd("[INSERT THE PATH TO SCRIPTS FOLDER]")
     for(i in dir()) source(i)
 \end{lstlisting}
 
-Next, we set the directory to \lstinline!precooked_runs!, and run the
-function \lstinline!adeq()!. The arguments for this function are the
+The next section will set the directory to \lstinline!precooked_runs!, and run the
+function \lstinline!adeq()!. The arguments for \lstinline!adeq()! are the
 posterior of trees in nexus format, the log file, the alignment in nexus
 format, and the number of posterior predictive simulations to be
-performed. You can use different path arguments if you ran your own
+performed. You can use different paths for the posterior data if you ran your own
 BEAST 2 analyses in another folder.
 
 \begin{lstlisting}[language=R]
@@ -185,9 +190,9 @@ BEAST 2 analyses in another folder.
     names(clock_adequacy_example)
 \end{lstlisting}
 
-The contents of \lstinline!clock_adequacy_example! should appear after the final
-line of code, and are each of the components that can be used to assess
-clock and substitution model adequacy.
+The contents of \lstinline!clock_adequacy_example! should appear after the latest
+line of code. The contents include each of the components used to assess
+clock and substitution model adequacy. Explore the names of the contents of \lstinline!clock_adequacy_example! and make sure you understand each of them.
 
 The \lstinline!clock_adequacy_example! object should have the same contents as
 object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
@@ -197,7 +202,7 @@ object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
     names(assessment_provided)
 \end{lstlisting}
 
-The following section describes the steps for assessing model adequacy in detail. \clearpage
+The following section describes the steps for assessing model adequacy in more detail. \clearpage
 
 \section{Steps for assessing model
 adequacy}\label{steps-for-assessing-model-adequacy}
@@ -205,8 +210,7 @@ adequacy}\label{steps-for-assessing-model-adequacy}
 \subsection{Reading the runs and simulating
 data}\label{reading-the-runs-and-simulating-data}
 
-We will study the code in R and Figure
-\ref{fig:example1} in
+We will study the code in R and Figure \ref{fig:example1} in
 detail. This section is mainly for reading and discussion, and is aimed for you to cement the steps required for assessing model adequacy.
 
 Open the \lstinline!adeq.R! file in a text editor of your preference and
@@ -303,8 +307,11 @@ Importantly, the assessment of the clock model allows us to identify the
 branches for which the molecular clock model can estimate the number of
 substitutions. We will explore the interpretation of these data in the following section.
 
-\section{Interpreting substitution model
-assessment}\label{interpreting-substitution-model-assessment}
+\section{Interpreting the results of model
+assessment}\label{Interpreting-the-results-of-model-assessment}
+
+\subsection{Results of substitution model
+assessment}\label{results-of-substitution-model-assessment}
 
 It is strongly recommended to use qualitative checks of models using
 graphical analyses. This section uses the results in
@@ -350,8 +357,8 @@ multinomial likelihood in R:
     \label{fig:example2}
 \end{figure}
 
-\subsubsection{Interpreting clock model
-assessment}\label{interpreting-clock-model-assessment}
+\subsubsection{Results of clock model
+assessment}\label{results-of-clock-model-assessment}
 
 The following script shows a simple example to explore the branch-wise
 posterior predictive \emph{P}-values. We will first load the tree. In
@@ -388,19 +395,24 @@ branch-wise posterior predictive \emph{P}-values are inside the central
 considered adequate when the $ A $ index is high.
 
 You might find it surprising that the $ A $ index in these
-data is not so close to 1. The reason for this might be evident when you
-open the data alignment in a text editor. These data have a very large
-amount of variation, and have possibly undergone substantial
+data is not so close to 1. The reason for this is in part that we used an overly simple model of rate variation across lineages. As described in section 3, the data were generated under an uncorrelated lognormal clock model, while the analyses in BEAST 2 was made using a strict clock. Furthermore, these data were generated under very high overall rates, such that they have a very large amount of variation, and possibly contain substantial
 substitutional saturation. For comparison, you might want to repeat all
-of the analyses, or explore the provided results for the second data set
+of the analyses, or explore the provided results of the posterior for the second data set
 provided, \lstinline!al.2.nex!. This data set evolved through the same
-tree but with lower rates of molecular evolution.
+tree but with lower rates of molecular evolution. The XML file for these data are called \lstinline!sim.2.xml! in the \lstinline!xml! folder, and the results from the BEAST 2 run are found in the \lstinline!precooked_runs! folder.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.900000\textwidth]{figures/Figure_3_branchwise_p.pdf}
     \caption{Estimated chronogram with branches coloured by their clock adequacy P-value.}
     \label{fig:example3}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.900000\textwidth]{figures/Figure_4_branchwise_dev.pdf}
+    \caption{Estimated chronogram with branches coloured by their deviation between the empirical and simulated lengths.}
+    \label{fig:example4}
 \end{figure}
 
 The following script shows a simple example to explore the branch-wise
@@ -420,16 +432,22 @@ deviation from the empirical branch length, and therefore lower accuracy
     edgelabels(round(assessment_provided$branch_length_deviation, 2), bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.900000\textwidth]{figures/Figure_4_branchwise_dev.pdf}
-    \caption{Estimated chronogram with branches coloured by their deviation between the empirical and simulated lengths.}
-    \label{fig:example4}
-\end{figure}
-
 Note that in this simple method to graph the results, the branches in
 the two plots above have been coloured by their rank, rather than their
 magnitude.
+
+\clearpage
+
+\section{Concluding remarks}\label{concluding-remarks}
+
+\begin{itemize}
+\item
+  Assessing model adequacy provides insight into the \emph{absolute} merits of a candidate model. This means that it can identify cases when even the best-fitting candidate model is a poor representation of the evolutionary process, such that inferences are unreliable. Assessment of model adequacy is an alternative to traditional model selection approaches that assess the \emph{relative} support among candidate models.
+\item
+  The test statistic used is critical to the assessment of model adequacy. The test statistic can define what aspect of a model is being assessed. Most test statistics are not complete descriptions of the model, so it is convenient to explore a model using several test statistics where possible.
+\item
+  There are cases in which the inferences of some parameters are reliable, while others are not (e.g. some branch rates are accurate while others are not). Closer examination of test statistics can sometimes bring additional insight into when the model is adequate for the data at hand.
+\end{itemize}
 
 \clearpage
 
