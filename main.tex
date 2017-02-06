@@ -44,7 +44,7 @@
 \section{Background}\label{background}
 
 This tutorial will guide you through methods to assess model adequacy in
-BEAST v2.4.2. In common practice, evolutionary
+BEAST v2.4.X. In common practice, evolutionary
 models are selected based on their statistical fit \emph{relative to
 each other}. This might be sufficient in some cases, but there is a risk
 that all of the candidate models lead to inferences that poorly
@@ -60,7 +60,7 @@ methods used in Bayesian inference for assessing model adequacy. A
 typical assessment of model adequacy is done by comparing a test
 statistic, calculated from the empirical data set, with the values of
 the statistic calculated from a large number of data sets simulated
-under the model. The simulated data from the model are often referred to
+under the model. The simulated data sets from the model are often referred to
 as posterior predictive simulations (PPS), and they represent future or
 alternative data sets under the candidate model. The test statistic
 should be informative about the assumptions of the model in question.
@@ -76,7 +76,7 @@ molecular dating (Figure \ref{fig:example1}).
 \item
   The multinomial likelihood, which is the likelihood of the data under
   a model with only a single general assumption: that substitution
-  events are independent and identically distributed. This statistic can
+  events are independent and identically distributed across sites. This statistic can
   be used to assess overall substitution model fit. Note that sites with
   missing data or indels should not be included when estimating the
   multinomial likelihood.
@@ -93,14 +93,14 @@ Exercise}\label{programs-used-in-this-exercise}
 \begin{itemize}
 
 \item
-  BEAST v2.4.2.
+  BEAST v2.4.X.
 \item
   R programming environment.
 \item
   R packages \emph{ape} and \emph{phangorn}. Before starting the exercise, install these packages by typing the following in your R console:
 
       \begin{lstlisting}[language=R]
-      install.packages("phangorn", dependencies = T)
+      install.packages("phangorn")
       \end{lstlisting}
 
 \end{itemize}
@@ -115,17 +115,36 @@ alignment with 2000 nucleotides in nexus format (\lstinline!al.1.nex!)
 and a Yule-process chronogram in newick format (\lstinline!chron.tre!)
 with 50 taxa. The alignment was simulated along the chronogram under a
 Jukes-Cantor substitution model and an \textbf{uncorrelated log-normal clock model}. You will also find an XML file (\lstinline!sim.1.xml!) in the
-\lstinline!xml! folder to run BEAST 2 for this data set. The settings in this XML file include a Jukes-Cantor substitution model, a \textbf{strict clock}, a birth-death tree prior, and a normally distributed root calibration with standard deviation of 5 and an offset of 50.
+\lstinline!xml! folder to run BEAST 2 for this data set. 
 
-Importantly, this XML file has been modified directly such that the starting tree has been provided and it remains fixed throughout the run. Continue in this section if you wish to learn how to modify the XML, or proceed to the next section to assess model adequacy. 
+The settings in this XML file include:
+
+\begin{itemize}
+\item
+  A Jukes-Cantor substitution model.
+\item
+  A \textbf{strict clock}.
+\item
+  A birth-death tree prior.
+\item
+  A normally distributed root calibration with standard deviation of 5 and mean of 50.
+\item
+  Leave the run length at 10 million steps and the sampling frequency as 1K so that your results are comparable to those provided.
+\end{itemize}
+
+Importantly, this XML file has been modified directly such that the starting tree has been provided and it remains fixed throughout the run. Continue in the following box if you wish to learn how to modify the XML, or proceed to the next section to assess model adequacy. 
+
+\begin{framed}
+
+\textbf{Optional: Fixing the tree topology}
 
 Load the data \lstinline!al.1.nex! to BEAUti, setting the model as described above, and saving the XML file. Then open the XML file in your preferred text editor, and add a \lstinline!tree! statement as follows above line with the \lstinline!<run ...! statement.
 
 \begin{lstlisting}[language=XML]
-    <tree id="Tree.t:al" spec='beast.util.TreeParser' newick="((A, B), (C, D), E);" taxa="@al"/>
+    <tree id="Tree.t:treename" spec='beast.util.TreeParser' newick="((A, B), (C, D), E);" taxa="@alignmentname"/>
 \end{lstlisting}
 
-Make sure that the newick tree is correct (you will find this in \lstinline!chron.tre! in the \lstinline!data! folder). Also make sure that the names of the tree and the taxa are correct. You will find the name of your tree after \lstinline!"Tree.t:! elsewhere in the XML. The name of the taxa is an \lstinline!@! followed by your data \lstinline!id! as shown immediately above the alignment.
+Newick refers to a format to express the tree structure. Replace the dummy newick tree for the correct tree, which you will find in \lstinline!chron.tre! in the \lstinline!data! folder. Also modify the names of the tree and the taxa: the name of your tree appears after \lstinline!"Tree.t:! elsewhere in the XML, and the name of the taxa is an \lstinline!@! followed by your data \lstinline!id! in the line immediately above the alignment.
 
 Now remove the \lstinline!tree! statement, which is inside the \lstinline!state! and looks like the following.
 
@@ -155,6 +174,8 @@ Now remove the whole random tree initialiser, which begins and ends with the fol
 
 Lastly, remove the lines (or set the weights to 0) of the operators on the tree topology. These include the lines that have any of \lstinline!SubtreeSlide!, \lstinline!Narrow!, \lstinline!Wide!, and \lstinline!WilsonBalding!. You might find these words together with the tree model selected (in this case \lstinline!BirthDeath!).
 
+\end{framed}
+
 Now run the XML file using BEAST 2. The output
 of this run can also be found in the folder \lstinline!precooked_runs!.
 
@@ -164,16 +185,10 @@ In this section we will run substitution and clock model assessment, using the o
 example can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
 find the results for the BEAST 2 run of \lstinline!sim.1.xml!.
 
-Begin by opening R. A quick way to run model assessment using the data in this tutorial is to source the file \lstinline!run.assessment.Rscript!, found in the main tutorial folder. You will need to make sure that the R working directory is the main tutorial folder. If you want to go through your own assessment of model adequacy, ignore sourcing this file and instead continue with the remainder of this section.
+Begin by opening R. By typing the following, you will set the working directory to the scripts folder, and then source all the functions inside it.
 
 \begin{lstlisting}[language=R]
-    source("run.assessment.Rscript")
-\end{lstlisting}
-
-Follow the next steps to perform your own assessment of model adequacy. By typing the following, you will set the working directory to the scripts folder, and then source all the functions inside it.
-
-\begin{lstlisting}[language=R]
-    setwd("[INSERT THE PATH TO SCRIPTS FOLDER]")
+    setwd("INSERT THE PATH TO SCRIPTS FOLDER")
     for(i in dir()) source(i)
 \end{lstlisting}
 
@@ -315,7 +330,7 @@ assessment}\label{results-of-substitution-model-assessment}
 
 It is strongly recommended to use qualitative checks of models using
 graphical analyses. This section uses the results in
-\lstinline!precooked_runs/results.Rdata! to graph different components
+\lstinline!precooked_runs/results.Rdata! and \textbf{not} those from the previous steps. If you want to use your results you need to replace \lstinline!assessment_provided! for the name of your results (\lstinline!clock_adequacy_example!). In this section we will graph different components
 for assessing clock model adequacy using posterior predictive
 simulations.
 
@@ -369,7 +384,7 @@ branches that have the lowest accuracy in green (Figure
 \ref{fig:example3}).
 
 \begin{lstlisting}[language=R]
-   tr <- read.tree("../data/chrono.tre")
+   tr <- read.tree("../data/chron.tre")
    plot(tr, edge.col = rainbow(length(assessment_provided$branch_wise_pppvalues), 
         start = 2/6, end = 4/6)[rank(assessment_provided$branch_wise_pppvalues)], 
         edge.width = 6, cex = 1.5)
