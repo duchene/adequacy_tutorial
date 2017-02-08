@@ -33,7 +33,7 @@
 	\vspace{4mm}
 
 	% Enter the names of all the authors here
-	{\Large {\em David Duchêne}}
+	{\Large {\em David A. Duchêne}}
 \end{center}
 
 
@@ -108,106 +108,80 @@ Exercise}\label{programs-used-in-this-exercise}
 \clearpage
 
 \section{Run the empirical
-data}\label{run-the-empirical-data}
+data}\label{run-the-empirical-data} 
 
-In the \lstinline!data! folder you will find a simulated sequence
-alignment with 2000 nucleotides in nexus format (\lstinline!al.1.nex!)
-and a Yule-process chronogram in newick format (\lstinline!chron.tre!)
-with 50 taxa. The alignment was simulated along the chronogram under a
-Jukes-Cantor substitution model and an \textbf{uncorrelated log-normal clock model}. You will also find an XML file (\lstinline!sim.1.xml!) in the
-\lstinline!xml! folder to run BEAST 2 for this data set. 
+The evolutionary history of birds has been widely studied using mitochondrial DNA. Mitochondrial genomes have been sequenced for a diversity of birds, including passerines (perching birds). However, can show substantial differences in nucleotide composition between species. This potentially violates an assumption that is commonly made in phylogenetic analyses: that of compositional homogeneity across lineages. 
+
+When we analyse nucleotide sequences, we often compare a number of substitution models from the GTR family to identify the one that provides the best fit to our data. However, we typically only consider a small subset of the models in this family, such as the JC, HKY, and GTR models. But it is possible that all of the models in this subset actually provide a poor absolute fit to our data.
+
+Here we investigate whether the widely used GTR+G model of nucleotide substitution provides an adequate description of the evolutionary process in mitochondrial DNA from 13 corvid birds (plus an outgroup taxon). This group of birds includes crows, ravens, and the Eurasian magpie. The data set comprises 1000 sites from the third codon positions of mitochondrial protein-coding genes.
+
+In the \lstinline!data! folder you will find the in nexus format (\lstinline!cp3.nex!)
+and a previously-estimated topology in newick format (\lstinline!corvid.tre!)
+with our corvid taxa. You will also find an XML file (\lstinline!cp3.xml!) in the
+\lstinline!xml! folder to run BEAST 2 for this data set.
 
 The settings in this XML file include:
 
 \begin{itemize}
 \item
-  A Jukes-Cantor substitution model.
+  A GTR+G substitution model.
 \item
-  A \textbf{strict clock}.
+  A \textbf{strict clock} with a uniform prior from 0 to 1 (substitution per site per million years).
 \item
-  A birth-death tree prior.
+  A yule tree prior.
 \item
-  A normally distributed root calibration with standard deviation of 5 and mean of 50.
+  A normally distributed root calibration with standard deviation of 2 and mean of 40.
 \item
-  Leave the run length at 10 million steps and the sampling frequency as 1K so that your results are comparable to those provided.
+  Run length of 10 million steps and the sampling frequency as 1K.
 \end{itemize}
 
-Importantly, this XML file has been modified directly such that the starting tree has been provided and it remains fixed throughout the run. Continue in the following box if you wish to learn how to modify the XML, or proceed to the next section to assess model adequacy. 
+Importantly, this XML file has been modified directly such that the starting tree has been provided and it remains fixed throughout the run. The steps to modify the XML to fix the tree topology are explained in a box at the end of this tutorial. 
 
-\begin{framed}
-
-\textbf{Optional: Fixing the tree topology}
-
-Load the data \lstinline!al.1.nex! to BEAUti, setting the model as described above, and saving the XML file. Then open the XML file in your preferred text editor, and add a \lstinline!tree! statement as follows above line with the \lstinline!<run ...! statement.
-
-\begin{lstlisting}[language=XML]
-    <tree id="Tree.t:treename" spec='beast.util.TreeParser' newick="((A, B), (C, D), E);" taxa="@alignmentname"/>
-\end{lstlisting}
-
-Newick refers to a format to express the tree structure. Replace the dummy newick tree for the correct tree, which you will find in \lstinline!chron.tre! in the \lstinline!data! folder. Also modify the names of the tree and the taxa: the name of your tree appears after \lstinline!"Tree.t:! elsewhere in the XML, and the name of the taxa is an \lstinline!@! followed by your data \lstinline!id! in the line immediately above the alignment.
-
-Now remove the \lstinline!tree! statement, which is inside the \lstinline!state! and looks like the following.
-
-\begin{lstlisting}[language=XML]
-    <tree id="Tree.t:treename" name="stateNode">
-            <taxonset id="TaxonSet.alignmentname" spec="TaxonSet">
-                <alignment idref="alignmentname"/>
-            </taxonset>
-     </tree>
-\end{lstlisting}
-
-In the place of that \lstinline!tree! statement, type an \lstinline!input! statement, which will lead  to a new \lstinline!statenode! as follows.
-
-\begin{lstlisting}[language=XML]
-    <input name='stateNode' idref='Tree.t:treename'/>
-\end{lstlisting}
-
-Once again, make sure that the tree name is correct.
-
-Now remove the whole random tree initialiser, which begins and ends with the following lines.
-
-\begin{lstlisting}[language=XML]
-    <init id="RandomTree.t:treename" ...
-    ...
-    </init>
-\end{lstlisting}
-
-Lastly, remove the lines (or set the weights to 0) of the operators on the tree topology. These include the lines that have any of \lstinline!SubtreeSlide!, \lstinline!Narrow!, \lstinline!Wide!, and \lstinline!WilsonBalding!. You might find these words together with the tree model selected (in this case \lstinline!BirthDeath!).
-
-\end{framed}
-
-Now run the XML file using BEAST 2. The output
+Run the XML file using BEAST 2. The output
 of this run can also be found in the folder \lstinline!precooked_runs!.
 
 \section{One step model assessment}\label{one-step-model-assessment-exercise}
 
-In this section we will run substitution and clock model assessment, using the output from the BEAST 2 analysis that we ran in the previous section. We will perform a one step model assessment in this section, and in following section we will explore in detail each of the steps undergone in this assessment. The results for this
-example can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
-find the results for the BEAST 2 run of \lstinline!sim.1.xml!.
+In this section we will run substitution and clock model assessment. Although we will be using the output from the BEAST 2 analysis that we ran in the previous section,  \textbf{you should use this section and that for model interpretation if you wish to perform model assessment using your own data.} 
 
-Begin by opening R. By typing the following, you will set the working directory to the scripts folder, and then source all the functions inside it.
+The results for the example data set in this section can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
+find the results for the BEAST 2 run of \lstinline!cp3.xml!.
+
+Begin by opening R. By typing the following, you will set the working directory to the scripts folder, and then load all the necessary scripts inside it.
 
 \begin{lstlisting}[language=R]
     setwd("INSERT THE PATH TO SCRIPTS FOLDER")
     for(i in dir()) source(i)
 \end{lstlisting}
 
-The next section will set the directory to \lstinline!precooked_runs!, and run the
-function \lstinline!adeq()!. The arguments for \lstinline!adeq()! are the
-posterior of trees in nexus format, the log file, the alignment in nexus
-format, and the number of posterior predictive simulations to be
-performed. You can use different paths for the posterior data if you ran your own
-BEAST 2 analyses in another folder.
+In the next box will set the directory to \lstinline!precooked_runs!, and run the
+function \lstinline!adeq()!. The information in quotes in \lstinline!adeq()! are:
+\begin{itemize} 
+  \item The path to the posterior of trees from BEAST 2
+  \item The path to the log file from BEAST 2 
+  \item The path to the empirical data alignment in nexus format
+\end{itemize}
+
+In addition, we indicate \lstinline!Nsim = 100!, which indicates the number of posterior predictive simulations to be performed.
 
 \begin{lstlisting}[language=R]
     setwd("../precooked_runs")
-    clock_adequacy_example <- adeq(trees.file = "sim1.trees", log.file ="sim1.log", empdat.file = "../data/al.1.nex", Nsim = 100)
+    clock_adequacy_example <- adeq(trees.file = "cp3.trees", log.file ="cp3.log", empdat.file = "../data/cp3.nex", Nsim = 100)
     names(clock_adequacy_example)
 \end{lstlisting}
 
 The contents of \lstinline!clock_adequacy_example! should appear after the latest
 line of code. The contents include each of the components used to assess
-clock and substitution model adequacy. Explore the names of the contents of \lstinline!clock_adequacy_example! and make sure you understand each of them.
+clock and substitution model adequacy. Elements that have the word \lstinline!empirical! are test statistics calculated for empirical data. Elements that say \lstinline!pps! are data for each of the simulated data sets. 
+
+The following are some detailed elements in \lstinline!clock_adequacy_example!:
+
+\begin{itemize}
+  \item The seventh element \lstinline!empirical_multlik! is the multinomial likelihood calculated for the empirical data set.
+  \item The eighth element \lstinline!pps_multliks! are the values of the multinomial likelihood calculated for each of the simulated data sets.
+  \item The ninth element \lstinline!mlik_pvalue! is the \emph{P}-value for the multinomial likelihood, a proxy for the distance between the simulations and the empirical data.
+\end{itemize}
 
 The \lstinline!clock_adequacy_example! object should have the same contents as
 object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
@@ -217,7 +191,7 @@ object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
     names(assessment_provided)
 \end{lstlisting}
 
-The following section describes the steps for assessing model adequacy in more detail. \clearpage
+The following section of this tutorial describes the steps for assessing model adequacy in more detail.
 
 \section{Steps for assessing model
 adequacy}\label{steps-for-assessing-model-adequacy}
@@ -330,7 +304,7 @@ assessment}\label{results-of-substitution-model-assessment}
 
 It is strongly recommended to use qualitative checks of models using
 graphical analyses. This section uses the results in
-\lstinline!precooked_runs/results.Rdata! and \textbf{not} those from the previous steps. If you want to use your results you need to replace \lstinline!assessment_provided! for the name of your results (\lstinline!clock_adequacy_example!). In this section we will graph different components
+\lstinline!precooked_runs/results.Rdata! and \textbf{not} those from the previous steps. If you want to use your results you need to replace \lstinline!assessment_provided! with the name of your results (\lstinline!clock_adequacy_example!). In this section we will graph different components
 for assessing clock model adequacy using posterior predictive
 simulations.
 
@@ -354,9 +328,8 @@ to be an adequate representation of the evolutionary process if the test
 statistic for the empirical data is a typical value arising from the
 model. The multinomial likelihood for the empirical data falls inside
 the distribution of values for simulated data (Figure
-\ref{fig:example2}), so our substitution model is a good description of the process
-that generated the data. This is unsurprising, since our empirical data
-were actually generated under the same substitution model used for analysis!
+\ref{fig:example2}), so our substitution model is possibly a reasonable description of the process
+that generated the data.
 
 This result can also be observed in the \emph{P}-value for the
 multinomial likelihood in R:
@@ -384,7 +357,7 @@ branches that have the lowest accuracy in green (Figure
 \ref{fig:example3}).
 
 \begin{lstlisting}[language=R]
-   tr <- read.tree("../data/chron.tre")
+   tr <- read.tree("../data/corvid.tre")
    plot(tr, edge.col = rainbow(length(assessment_provided$branch_wise_pppvalues), 
         start = 2/6, end = 4/6)[rank(assessment_provided$branch_wise_pppvalues)], 
         edge.width = 6, cex = 1.5)
@@ -410,11 +383,8 @@ branch-wise posterior predictive \emph{P}-values are inside the central
 considered adequate when the $ A $ index is high.
 
 You might find it surprising that the $ A $ index in these
-data is not so close to 1. The reason for this is in part that we used an overly simple model of rate variation across lineages. As described in section 3, the data were generated under an uncorrelated lognormal clock model, while the analyses in BEAST 2 was made using a strict clock. Furthermore, these data were generated under very high overall rates, such that they have a very large amount of variation, and possibly contain substantial
-substitutional saturation. For comparison, you might want to repeat all
-of the analyses, or explore the provided results of the posterior for the second data set
-provided, \lstinline!al.2.nex!. This data set evolved through the same
-tree but with lower rates of molecular evolution. The XML file for these data are called \lstinline!sim.2.xml! in the \lstinline!xml! folder, and the results from the BEAST 2 run are found in the \lstinline!precooked_runs! folder.
+data are closer to 0 than 1. The reason for this is possibly that we used an overly simple model of rate variation across lineages. As described in section 3, the analyses in BEAST 2 were done using a strict clock. Furthermore, these data have very high overall rates, such that they have a very large amount of variation, and possibly contain substantial
+substitutional saturation. 
 
 \begin{figure}
     \centering
@@ -433,12 +403,14 @@ tree but with lower rates of molecular evolution. The XML file for these data ar
 The following script shows a simple example to explore the branch-wise
 length deviation. This metric is a proxy for the difference between the
 branch-length estimate using empirical data and the mean branch-length
-estimate using posterior predictive simulations. To make the values comparable across branches, the difference between the empirical branch-length and mean PPS branch-length has been divided by the empirical branch length.
+estimate using posterior predictive simulations. To make the values comparable across branches, the difference between the empirical branch length and mean PPS branch-length has been divided by the empirical branch length.
 If this value is close to zero, the priors for times and molecular evolutionary rates can be considered adequate. We
-apply the same colouring system as the plot above, but note that in the
-case of branch length deviation larger numbers indicate greater
+apply the same colouring system as the plot above. Note that in the
+case of branch length deviation, larger numbers indicate greater
 deviation from the empirical branch length, and therefore lower accuracy
 (Figure \ref{fig:example4}).
+
+Have a look at the alignment file to observe the large amount of variation in the data, and why some of the values in Figure \ref{fig:example4} seem extremely large. Our conclusion is that the strict clock provides a very poor fit to these data, and a more flexible clock model might be better suited.
 
 \begin{lstlisting}[language=R]
     plot(tr, edge.col = rev(rainbow(length(assessment_provided$branch_length_deviation), 
@@ -459,12 +431,55 @@ magnitude.
 \item
   Assessing model adequacy provides insight into the \emph{absolute} merits of a candidate model. This means that it can identify cases when even the best-fitting candidate model is a poor representation of the evolutionary process, such that inferences are unreliable. Assessment of model adequacy is an alternative to traditional model selection approaches that assess the \emph{relative} support among candidate models.
 \item
-  The test statistic used is critical to the assessment of model adequacy. The test statistic can define what aspect of a model is being assessed. Most test statistics are not complete descriptions of the model, so it is convenient to explore a model using several test statistics where possible.
+  The choice of test statistic is critical to the assessment of model adequacy. The test statistic can define what aspect of a model is being assessed. Most test statistics are not complete descriptions of the model, so it is convenient to explore a model using several test statistics where possible.
 \item
   There are cases in which the inferences of some parameters are reliable, while others are not (e.g. some branch rates are accurate while others are not). Closer examination of test statistics can sometimes bring additional insight into when the model is adequate for the data at hand.
 \end{itemize}
 
 \clearpage
+
+
+\begin{framed}
+
+\textbf{Optional: Fixing the tree topology}
+
+Load the data \lstinline!cp3.nex! to BEAUti, setting the model as described in the first section, and saving the XML file. Then open the XML file in your preferred text editor, and add a \lstinline!tree! statement as follows above line with the \lstinline!<run ...! statement.
+
+\begin{lstlisting}[language=XML]
+    <tree id="Tree.t:treename" spec='beast.util.TreeParser' newick="((A, B), (C, D), E);" taxa="@alignmentname"/>
+\end{lstlisting}
+
+Newick refers to a format to express the tree structure. Replace the dummy newick tree with the correct tree, which you will find in \lstinline!corvid.tre! in the \lstinline!data! folder. Also modify the names of the tree and the taxa: the name of your tree appears after \lstinline!"Tree.t:! elsewhere in the XML, and the name of the taxa is an \lstinline!@! followed by your data \lstinline!id! in the line immediately above the alignment.
+
+Now remove the \lstinline!tree! statement, which is inside the \lstinline!state! and looks like the following.
+
+\begin{lstlisting}[language=XML]
+    <tree id="Tree.t:treename" name="stateNode">
+            <taxonset id="TaxonSet.alignmentname" spec="TaxonSet">
+                <alignment idref="alignmentname"/>
+            </taxonset>
+     </tree>
+\end{lstlisting}
+
+In the place of that \lstinline!tree! statement, type an \lstinline!input! statement, which will lead  to a new \lstinline!statenode! as follows.
+
+\begin{lstlisting}[language=XML]
+    <input name='stateNode' idref='Tree.t:treename'/>
+\end{lstlisting}
+
+Once again, make sure that the tree name is correct.
+
+Now remove the whole random tree initialiser, which begins and ends with the following lines.
+
+\begin{lstlisting}[language=XML]
+    <init id="RandomTree.t:treename" ...
+    ...
+    </init>
+\end{lstlisting}
+
+Lastly, remove the lines (or set the weights to 0) of the operators on the tree topology. These include the lines that have any of \lstinline!SubtreeSlide!, \lstinline!Narrow!, \lstinline!Wide!, and \lstinline!WilsonBalding!. You might find these words together with the tree model selected (in this case \lstinline!BirthDeath!).
+
+\end{framed}
 
 
 
