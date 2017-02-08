@@ -188,7 +188,7 @@ object ``assessment\_provided'' in the file \lstinline!results.Rdata!:
 
 \begin{lstlisting}[language=R]
     load("results.Rdata")
-    names(assessment_provided)
+    names(clock_adequacy_example)
 \end{lstlisting}
 
 The following section of this tutorial describes the steps for assessing model adequacy in more detail.
@@ -303,8 +303,7 @@ assessment}\label{Interpreting-the-results-of-model-assessment}
 assessment}\label{results-of-substitution-model-assessment}
 
 It is strongly recommended to use qualitative checks of models using
-graphical analyses. This section uses the results in
-\lstinline!precooked_runs/results.Rdata! and \textbf{not} those from the previous steps. If you want to use your results you need to replace \lstinline!assessment_provided! with the name of your results (\lstinline!clock_adequacy_example!). In this section we will graph different components
+graphical analyses. In this section we will graph different components
 for assessing clock model adequacy using posterior predictive
 simulations.
 
@@ -314,12 +313,12 @@ the multinomial likelihood for the PPS data, and will show the position
 of the value for empirical data on this distribution.
 
 \begin{lstlisting}[language=R]
-    hist(assessment_provided[[8]], 
-         xlim = c(min(assessment_provided[[8]])-sd(assessment_provided[[8]]), 
-                  max(assessment_provided[[8]])+sd(assessment_provided[[8]])), 
+    hist(clock_adequacy_example[[8]], 
+         xlim = c(min(clock_adequacy_example[[8]])-sd(clock_adequacy_example[[8]]), 
+                  max(clock_adequacy_example[[8]])+sd(clock_adequacy_example[[8]])), 
          main = "", xlab = "Multinomial likelihood")
 
-    abline(v = assessment_provided[[7]], col = 2, lwd = 3)
+    abline(v = clock_adequacy_example[[7]], col = 2, lwd = 3)
 \end{lstlisting}
 
 Your plot will be identical or very similar to Figure
@@ -335,7 +334,7 @@ This result can also be observed in the \emph{P}-value for the
 multinomial likelihood in R:
 
 \begin{lstlisting}[language=R]
-    assessment_provided[9]
+    clock_adequacy_example[9]
 \end{lstlisting}
 
 \begin{figure}
@@ -358,10 +357,10 @@ branches that have the lowest accuracy in green (Figure
 
 \begin{lstlisting}[language=R]
    tr <- read.tree("../data/corvid.tre")
-   plot(tr, edge.col = rainbow(length(assessment_provided$branch_wise_pppvalues), 
-        start = 2/6, end = 4/6)[rank(assessment_provided$branch_wise_pppvalues)], 
+   plot(tr, edge.col = rainbow(length(clock_adequacy_example$branch_wise_pppvalues), 
+        start = 2/6, end = 4/6)[rank(clock_adequacy_example$branch_wise_pppvalues)], 
         edge.width = 6, cex = 1.5)
-   edgelabels(assessment_provided$branch_wise_pppvalues, bg = "white", cex = 1.5, frame = "none")
+   edgelabels(clock_adequacy_example$branch_wise_pppvalues, bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
 The values along each branch indicate the proportion of simulations in which
@@ -374,7 +373,7 @@ respect to the model.
 You can also investigate the $ A $ index:
 
 \begin{lstlisting}[language=R]
-   assessment_provided[4]
+   clock_adequacy_example[4]
 \end{lstlisting}
 
 This index is the proportion of branches in the tree for which the
@@ -413,10 +412,10 @@ deviation from the empirical branch length, and therefore lower accuracy
 Have a look at the alignment file to observe the large amount of variation in the data, and why some of the values in Figure \ref{fig:example4} seem extremely large. Our conclusion is that the strict clock provides a very poor fit to these data, and a more flexible clock model might be better suited.
 
 \begin{lstlisting}[language=R]
-    plot(tr, edge.col = rev(rainbow(length(assessment_provided$branch_length_deviation), 
-         start = 2/6, end = 4/6)[rank(assessment_provided$branch_length_deviation)]), 
+    plot(tr, edge.col = rev(rainbow(length(clock_adequacy_example$branch_length_deviation), 
+         start = 2/6, end = 4/6)[rank(clock_adequacy_example$branch_length_deviation)]), 
          edge.width = 6, cex = 1.5)
-    edgelabels(round(assessment_provided$branch_length_deviation, 2), bg = "white", cex = 1.5, frame = "none")
+    edgelabels(round(clock_adequacy_example$branch_length_deviation, 2), bg = "white", cex = 1.5, frame = "none")
 \end{lstlisting}
 
 Note that in this simple method to graph the results, the branches in
