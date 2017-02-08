@@ -143,7 +143,7 @@ of this run can also be found in the folder \lstinline!precooked_runs!.
 
 \section{One step model assessment}\label{one-step-model-assessment-exercise}
 
-In this section we will run substitution and clock model assessment. Although we will be using the output from the BEAST 2 analysis that we ran in the previous section,  \textbf{you should use this section and that for model interpretation if you wish to perform model assessment using your own data.} 
+In this section we will run substitution and clock model assessment. We will be using the output from the BEAST 2 analysis that we ran in the previous section. However, \textbf{if you wish to perform model assessment for your own data, you should follow the steps in this section.} 
 
 The results for the example data set in this section can also be found in the folder \lstinline!precooked_runs!. In that folder you will also
 find the results for the BEAST 2 run of \lstinline!cp3.xml!.
@@ -163,7 +163,7 @@ function \lstinline!adeq()!. The information in quotes in \lstinline!adeq()! are
   \item The path to the empirical data alignment in nexus format
 \end{itemize}
 
-In addition, we indicate \lstinline!Nsim = 100!, which indicates the number of posterior predictive simulations to be performed.
+In addition, \lstinline!Nsim = 100! specifies the number of posterior predictive simulations to be performed.
 
 \begin{lstlisting}[language=R]
     setwd("../precooked_runs")
@@ -217,10 +217,10 @@ you should see the following:
  }
 \end{lstlisting}
 
-The analysis of empirical data appears in blue in Figure 
+The analysis of empirical data is shown in the blue box in Figure 
 \ref{fig:example2}. We then need to read the posterior trees and parameter
 estimates of the BEAST 2 analysis. The R package \emph{phangorn} allows
-us to take these data and run the posterior predictive simulations, which is shown in green in Figure \ref{fig:example1}. You
+us to take these data and run the posterior predictive simulations, which is shown in the green box in Figure \ref{fig:example1}. You
 will find the code to read data from the posterior and for simulating genetic alignments in
 \lstinline!make.pps.als!. This script identifies the model being assessed and
 simulates data accordingly. The input required in this step includes:
@@ -245,7 +245,7 @@ line in \lstinline!adeq.R! in question:
 
 If the input file has a greater number of samples than the number of
 simulations requested, this will randomly select samples from the
-posterior. This is a good moment to discuss or read about how an alignment can be simulated using data from the posterior.
+posterior. This is a good moment to discuss or read about how an alignment can be simulated using parameter estimates from the posterior.
 
 \begin{figure}
     \centering
@@ -272,14 +272,14 @@ each of the simulated data sets.
 \end{lstlisting}
 
 The output of this function is what we need for model assessment: the
-test statistics for the empirical data, and the distribution of test
+test statistic for the empirical data, and the distribution of test
 statistics for the simulated data sets.
 
 \subsubsection{\texorpdfstring{Calculate
 \emph{P}-values}{Calculate P-values}}\label{calculate-p-values}
 
 We can now compare the test statistic for the empirical data and each of
-the simulated data sets, which is the step shown in red in Figure
+the simulated data sets, which is the step shown in the red box in Figure
 \ref{fig:example1}. The most common way to do this is to calculate
 the tail area probability, which is the number of simulations with a
 test statistic greater than the value for the empirical data.
@@ -349,7 +349,7 @@ assessment}\label{results-of-clock-model-assessment}
 
 The following script shows a simple example to explore the branch-wise
 posterior predictive \emph{P}-values. We will first load the tree. In
-this example we will use the original tree provided, but usually the
+this example we will use the original tree provided (\lstinline!data/corvid.tre!), but usually the
 tree with the median posterior branching times would be appropriate. We
 will colour the branches with the best accuracy in blue, and the
 branches that have the lowest accuracy in green (Figure
@@ -364,10 +364,10 @@ branches that have the lowest accuracy in green (Figure
 \end{lstlisting}
 
 The values along each branch indicate the proportion of simulations in which
-the branch-length was greater than the length estimated using the
+the branch length was greater than the length estimated using the
 empirical data. The expected value under the model is 0.5. If this value
-is 0 branch-lengths are being underestimated with respect to the model.
-Similarly, if the value is 1 branch-lengths are being overestimated with
+is 0 branch lengths are being underestimated with respect to the model.
+Similarly, if the value is 1 branch lengths are being overestimated with
 respect to the model.
 
 You can also investigate the $ A $ index:
@@ -381,8 +381,8 @@ branch-wise posterior predictive \emph{P}-values are inside the central
 95 percent of the distribution. The rates and times models can be
 considered adequate when the $ A $ index is high.
 
-You might find it surprising that the $ A $ index in these
-data are closer to 0 than 1. The reason for this is possibly that we used an overly simple model of rate variation across lineages. As described in section 3, the analyses in BEAST 2 were done using a strict clock. Furthermore, these data have very high overall rates, such that they have a very large amount of variation, and possibly contain substantial
+You might find it surprising that the $ A $ index for this
+data set is closer to 0 than 1. The reason for this is possibly that we used an overly simple model of rate variation across lineages. As described in section 3, the analyses in BEAST 2 were done using a strict clock. Furthermore, these data have very high overall rates, such that they have a very large amount of variation, and possibly contain substantial
 substitutional saturation. 
 
 \begin{figure}
@@ -409,7 +409,7 @@ case of branch length deviation, larger numbers indicate greater
 deviation from the empirical branch length, and therefore lower accuracy
 (Figure \ref{fig:example4}).
 
-Have a look at the alignment file to observe the large amount of variation in the data, and why some of the values in Figure \ref{fig:example4} seem extremely large. Our conclusion is that the strict clock provides a very poor fit to these data, and a more flexible clock model might be better suited.
+Have a look at the alignment file to observe the large amount of variation in the data, and why some of the values in Figure \ref{fig:example4} seem extremely large. One thing you might notice is that the sites seem highly variable, suggesting that there might be a large degree of substitutional saturation. Our conclusion form these analyses is that the strict clock provides a very poor fit to these data, and a more flexible clock model might be better suited. In addition, it might be appropriate to use the first and second codon positions of these mitochondrial genes, because they are likely to be less saturated.
 
 \begin{lstlisting}[language=R]
     plot(tr, edge.col = rev(rainbow(length(clock_adequacy_example$branch_length_deviation), 
