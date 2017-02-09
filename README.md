@@ -223,7 +223,7 @@ posterior. This is a good moment to discuss or read about how an alignment can b
 
 <figure>
 	<a id="fig:example1"></a>
-	<img style="width:80.0%;" src="figures/Figure_1.pdf" alt="">
+	<img style="width:80.0%;" src="figures/Figure_1.svg" alt="">
 	<figcaption>Figure 1: Two of the existing approaches to using posterior predictive simulations to assess model adequacy in Bayesian phylogenetics. (a) One group of methods use characteristics of the data for model assessment, like the multinomial likelihood or the GC content. (b) Another method can assess clock models using estimates from clock-free methods. Under this approach, the number of substitutions per site expected along each branch under the clock hierarchical model are compared with those inferred in a clock-free analysis of the empirical data.</figcaption>
 </figure>
 <br>
@@ -326,14 +326,13 @@ multinomial likelihood in R:
 
 <figure>
 	<a id="fig:example2"></a>
-	<img style="width:70.0%;" src="figures/Figure_2_multinomial_dist.pdf" alt="">
+	<img style="width:70.0%;" src="figures/Figure_2_multinomial_dist.svg" alt="">
 	<figcaption>Figure 2: Distribution of PPS multinomial likelihood values with the value of the test statistic for the empirical data shown as a vertical line in red.</figcaption>
 </figure>
 <br>
 
 
-### Results of clock model
-assessment
+### Results of clock model assessment
 
 The following script shows a simple example to explore the branch-wise
 posterior predictive *P*-values. We will first load the tree. In
@@ -383,7 +382,7 @@ substitutional saturation.
 
 <figure>
 	<a id="fig:example3"></a>
-	<img style="width:90.0%;" src="figures/Figure_3_branchwise_p.pdf" alt="">
+	<img style="width:90.0%;" src="figures/Figure_3_branchwise_p.svg" alt="">
 	<figcaption>Figure 3: Estimated chronogram with branches coloured by their clock adequacy P-value.</figcaption>
 </figure>
 <br>
@@ -391,7 +390,7 @@ substitutional saturation.
 
 <figure>
 	<a id="fig:example4"></a>
-	<img style="width:90.0%;" src="figures/Figure_4_branchwise_dev.pdf" alt="">
+	<img style="width:90.0%;" src="figures/Figure_4_branchwise_dev.svg" alt="">
 	<figcaption>Figure 4: Estimated chronogram with branches coloured by their deviation between the empirical and simulated lengths.</figcaption>
 </figure>
 <br>
